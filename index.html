@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Life Tracker</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 16px; max-width: 700px; }
+    h2 { margin-top: 28px; }
+    input, select, button { padding: 10px; margin: 6px 0; width: 100%; box-sizing: border-box; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .msg { margin-top: 10px; padding: 10px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Life Tracker</h1>
+
+  <script>
+    const API_URL = "PASTE_YOUR_APPS_SCRIPT_WEBAPP_URL_HERE";
+    const KEY = "CHANGE_ME_TO_A_LONG_SECRET";
+
+    async function post(action, payload) {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: KEY, action, ...payload })
+      });
+      return res.json();
+    }
+
+    function show(elId, ok, text) {
+      const el = document.getElementById(elId);
+      el.className = "msg";
+      el.style.background = ok ? "#e8ffe8" : "#ffe8e8";
+      el.textContent = text;
+    }
+
+    function today() {
+      const d = new Date();
+      return d.toISOString().slice(0,10);
+    }
+  </script>
+
+  <h2>➕ Add Expense</h2>
+  <div class="row">
+    <input id="exDate" type="date" />
+    <input id="exAmount" type="number" placeholder="Amount (e.g., 150)" />
+  </div>
+  <select id="exCategory">
+    <option>Food</option><option>Travel</option><option>Groceries</option>
+    <option>Bills</option><option>Shopping</option><option>Other</option>
+  </select>
+  <input id="exNotes" placeholder="Notes (optional)" />
+  <button onclick="addExpense()">Save Expense</button>
+  <div id="exMsg"></div>
+
+  <h2>✅ Add Task</h2>
+  <input id="taskText" placeholder="Task (e.g., Finish report)" />
+  <div class="row">
+    <select id="taskPriority">
+      <option>LOW</option><option selected>MEDIUM</option><option>HIGH</option>
+    </select>
+    <select id="taskStatus">
+      <option selected>OPEN</option><option>DONE</option>
+    </select>
+  </div>
+  <button onclick="addTask()">Save Task</button>
+  <div id="taskMsg"></div>
+
+  <h2>🎯 Update Goal</h2>
+  <input id="goalName" placeholder="Goal (e.g., Weight Loss)" />
+  <input id="goalProgress" placeholder="Progress (e.g., 2kg lost / 20%)" />
+  <input id="goalNotes" placeholder="Notes (optional)" />
+  <button onclick="addGoal()">Save Goal Update</button>
+  <div id="goalMsg"></div>
+
+  <script>
+    document.getElementById("exDate").value = today();
+
+    async function addExpense() {
+      const date = document.getElementById("exDate").value || today();
+      const amount = document.getElementById("exAmount").value;
+      const category = document.getElementById("exCategory").value;
+      const notes = document.getElementById("exNotes").value;
+
+      const r = await post("addExpense", { date, amount, category, notes });
+      show("exMsg", r.ok, r.ok ? "✅ Expense saved" : "❌ " + r.error);
+      if (r.ok) document.getElementById("exAmount").value = "";
+      if (r.ok) document.getElementById("exNotes").value = "";
+    }
+
+    async function addTask() {
+      const date = today();
+      const task = document.getElementById("taskText").value;
+      const priority = document.getElementById("taskPriority").value;
+      const status = document.getElementById("taskStatus").value;
+
+      const r = await post("addTask", { date, task, priority, status });
+      show("taskMsg", r.ok, r.ok ? "✅ Task saved" : "❌ " + r.error);
+      if (r.ok) document.getElementById("taskText").value = "";
+    }
+
+    async function addGoal() {
+      const date = today();
+      const goal = document.getElementById("goalName").value;
+      const progress = document.getElementById("goalProgress").value;
+      const notes = document.getElementById("goalNotes").value;
+
+      const r = await post("addGoal", { date, goal, progress, notes });
+      show("goalMsg", r.ok, r.ok ? "✅ Goal update saved" : "❌ " + r.error);
+      if (r.ok) document.getElementById("goalProgress").value = "";
+      if (r.ok) document.getElementById("goalNotes").value = "";
+    }
+  </script>
+</body>
+</html>
