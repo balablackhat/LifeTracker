@@ -22,7 +22,6 @@
     async function post(action, payload) {
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: KEY, action, ...payload })
       });
       return res.json();
@@ -114,4 +113,5 @@
   </script>
 </body>
 </html>
+
 
